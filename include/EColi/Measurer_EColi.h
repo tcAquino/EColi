@@ -27,27 +27,38 @@ namespace ecoli
     , masses(measure_times.size(), std::vector<double>(4))
     {}
       
-    // Each call adds values to the current measure time
+    // Add values to the current measure time
     template <typename Subject, typename Reaction>
     void operator()
     (Subject const& subject, Reaction const& reaction)
     {
       for (auto const& part : subject.particles())
       {
-        // Ignore particles with initial time which has not yet been reached
+        // Ignore particles with injection time which has not yet been reached
         if (part.state_old().time > measure_times[measure])
           continue;
-        // If particle has not yet been aborbed
-        if (part.state_new().region != 3)
+          
+        // If particle has not yet been absorbed
+        if (part.state_new().region != 3
+            && part.state_old().time < measure_times[measure])
         {
           // React on a copy of the old state until the measurement time
-          auto state{ part.state_old() };
+          auto state = part.state_old();
           reaction(state, measure_times[measure]-state.time);
           masses[measure][state.region] += state.mass;
         }
         // If particle has been absorbed
         else
-          masses[measure][3] += part.state_new().mass;
+        {
+          if (measure_times[measure] > part.state_new().time)
+            masses[measure][3] += part.state_new().mass;
+          else
+          {
+              auto state = part.state_old();
+              reaction(state, measure_times[measure]-state.time);
+              masses[measure][3] += state.mass;
+          }
+        }
       }
       ++measure;
     }
@@ -69,6 +80,10 @@ namespace ecoli
       }
       output.close();
     }
+    
+    // Skip current measure time without measuring anything
+    void skip()
+    { ++measure; }
     
     // Restart measuring from first measure time, keeping current values
     void reset_measure()

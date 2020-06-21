@@ -194,7 +194,7 @@ int main(int argc, const char * argv[])
   ? 1 : 0;
   std::vector<double> injection_times = range::range(time_injection_min,
     time_step_injection, time_injection_max);
-  for (auto const& time_injection : injection_times)
+  for (auto time_injection : injection_times)
   {
     static bool first_injection = 1;
     double velocity = transitions.advection().velocity(time_injection);
@@ -215,12 +215,12 @@ int main(int argc, const char * argv[])
       std::vector<std::size_t> particles_region = { 0,
         std::size_t(mass[1]/total_mass*nr_particles),
         std::size_t(mass[2]/total_mass*nr_particles) };
-      particles_region.front() = nr_particles -
+      particles_region[0] = nr_particles -
         (particles_region[1]+particles_region[2]);
       
       std::vector<CTRW::Particle> particles;
       particles.reserve(nr_particles);
-      for (std::size_t region = 0; region < 3; ++region)
+      for (std::size_t region = 0; region < particles_region.size(); ++region)
         for (std::size_t pp = 0; pp < particles_region[region]; ++pp)
           particles.push_back(State{ 0.,
             mass[region]/particles_region[region],
@@ -231,11 +231,14 @@ int main(int argc, const char * argv[])
     CTRW ctrw{ make_particles() };
 
     std::cout << "injection time = " << time_injection << "\n";
-    for (auto const& time_measure : measurer.measure_times)
+    for (auto time_measure : measurer.measure_times)
     {
       // Ignore measure times before current injection time
       if (time_measure < time_injection)
+      {
+        measurer.skip();
         continue;
+      }
 
       // Evolve each particle to current measure time or until absorbed
       ctrw.evolve
@@ -244,7 +247,6 @@ int main(int argc, const char * argv[])
          && part.state_new().region != 3; },
        transitions);
       measurer(ctrw, transitions.reaction());
-      std::cout << "\ttime = " << time_measure << "\n";
     }
     measurer.reset_measure();
   }
