@@ -97,6 +97,9 @@ int main(int argc, const char * argv[])
   
   std::string flow_dir = "../flow";
   std::string output_dir = "../data";
+  
+//  std::string flow_dir = "/Users/tomasaquino/Dropbox/EColi/code/flow"
+//  std::string output_dir = "/Users/tomasaquino/Dropbox/EColi/code/data";
 
   // Full mean residence time in water column (deposition time)
   auto time_watercolumn = [time_w_disp, advection_coeff_w]

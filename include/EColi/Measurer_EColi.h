@@ -38,27 +38,21 @@ namespace ecoli
         if (part.state_old().time > measure_times[measure])
           continue;
           
-        // If particle has not yet been absorbed
+        // If particle has not yet been absorbed in the new state
         if (part.state_new().region != 3
             && part.state_old().time < measure_times[measure])
         {
-          // React on a copy of the old state until the measurement time
-          auto state = part.state_old();
-          reaction(state, measure_times[measure]-state.time);
-          masses[measure][state.region] += state.mass;
+          interpolate_mass(part, reaction);
+          continue;
         }
-        // If particle has been absorbed
+        
+        // If particle has been absorbed in the new state
+        // If the new state is in the future
+        if (measure_times[measure] > part.state_new().time)
+          masses[measure][3] += part.state_new().mass;
+        // If it is in the past
         else
-        {
-          if (measure_times[measure] > part.state_new().time)
-            masses[measure][3] += part.state_new().mass;
-          else
-          {
-              auto state = part.state_old();
-              reaction(state, measure_times[measure]-state.time);
-              masses[measure][3] += state.mass;
-          }
-        }
+          interpolate_mass(part, reaction);
       }
       ++measure;
     }
@@ -95,6 +89,16 @@ namespace ecoli
     // masses[tt][rr] is the mass in region rr at time measure_times[tt]
     std::vector<std::vector<double>> masses;
     std::size_t measure{ 0 };
+    
+    // React on a copy of the old state until the measurement time
+    template <typename Particle, typename Reaction>
+    void interpolate_mass
+    (Particle const& particle, Reaction const& reaction)
+    {
+      auto state = particle.state_old();
+      reaction(state, measure_times[measure]-state.time);
+      masses[measure][state.region] += state.mass;
+    }
 	};
 }
 

@@ -96,7 +96,7 @@ namespace ecoli
     
     Advection_EColi_Piecewise
     (std::string const& filename, std::string const& filename_surge)
-    : advection{ read(filename) }
+    : advection{ read(filename, filename_surge) }
     {}
 
     auto cbegin() const
