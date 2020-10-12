@@ -54,8 +54,8 @@ int main(int argc, const char * argv[])
               << "\ttime_injection_max      : End time of injection (equal to start time for pulse)\n"
               << "\ttime_step_injection     : Discretization time step for injection (ignored for pulse)\n"
               << "\tmax_dist                : Maximum downstream distance\n"
-              << "\ttime_min                : Minimum measure timeDecay rate in water column\n"
-              << "\ttime_max                : Maximum measure timeDecay rate in hyporheic zone\n"
+              << "\ttime_min                : Minimum measure time\n"
+              << "\ttime_max                : Maximum measure time\n"
               << "\tnr_measurements         : Nr of measurement times\n"
               << "\tmeasure_spacing         : lin - Linear time spacing\n"
               << "\t                          log - Logarithmic time spacing\n"
@@ -159,7 +159,7 @@ int main(int argc, const char * argv[])
   // Prepare output
   std::cout << std::setprecision(2)
             << std::scientific;
-  std::string filename_base{ output_dir + "/Data_EColi_RegionMass" };
+  std::string filename_base{ output_dir + "/Data_EColi_RegionMass_" };
   std::stringstream stream;
   stream << std::scientific << std::setprecision(2);
   stream << time_w_disp << "_"
