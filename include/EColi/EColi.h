@@ -25,7 +25,6 @@
 #include <utility>
 #include <stdexcept>
 #include "general/useful.h"
-#include "Stochastic/Random.h"
 
 namespace ecoli
 {
@@ -215,7 +214,7 @@ namespace ecoli
       Container advection;
       double time, val;
       bool surge;
-      while(file >> time && file >> val && file_surge >> surge)
+      while (file >> time >> val && file_surge >> surge)
         advection.push_back({ time, val, surge });
       file.close();
       file_surge.close();
@@ -227,27 +226,57 @@ namespace ecoli
   // Transitions helper class to be used with Transitions class below
   // Computes residence time and region to transition to
   // Handles piecewise advection in water column,
-  // exponential residence time in hyporheic zone due to dispersion/advection,
+  // exponential residence time in hyporheic zone due to diffusion/advection,
   // and stable residence time bed
   template
-  <typename Time_WaterColumn, typename Time_Hyporheic>
+  <typename Time_WaterColumn_Base,
+  typename Time_Hyporheic_Adv_Base,
+  typename HyporeicTransitionRegion_Base,
+  typename HyporeicTransitionRegion_Adv_Base,
+  typename Time_WaterColumn_Surge,
+  typename Time_Hyporheic_Adv_Surge,
+  typename HyporeicTransitionRegion_Surge,
+  typename HyporeicTransitionRegion_Adv_Surge,
+  typename Time_Bed>
   class TransitionHelper_EColi_PiecewiseAdvection
   {
+    double time_h_diff;  // Mean diffusive residence time in hyporheic zone
+    
+    Time_WaterColumn_Base time_watercolumn_base;      // Full mean residence time in water column during base flow
+    Time_Hyporheic_Adv_Base time_hyporheic_adv_base;  // Mean residence time by advection in hyporheic zone during base flow
+    HyporeicTransitionRegion_Base hyporheic_transition_region_base;
+    HyporeicTransitionRegion_Adv_Base hyporheic_transition_region_adv_base;
+    
+    Time_WaterColumn_Surge time_watercolumn_surge;      // Full mean residence time in water column during surge
+    Time_Hyporheic_Adv_Surge time_hyporheic_adv_surge;  // Mean residence time by advection in hyporheic zone during surge
+    HyporeicTransitionRegion_Surge hyporheic_transition_region_surge;
+    HyporeicTransitionRegion_Adv_Surge hyporheic_transition_region_adv_surge;
+    
+    Time_Bed time_bed;  // Full distributed time in bed
+
   public:
     // Constructors
-    const struct Parameters
-    {
-      double time_h_disp;                 // Mean dispersive residence time in hyporheic zone
-      double time_b;                      // Characteristic residence time in bed
-      double alpha_b;                     // Exponent of residence time in bed
-      Time_WaterColumn time_watercolumn;  // Full mean residence time in water column
-      Time_Hyporheic time_hyporheic_adv;  // Mean residence time by advection in hyporheic zone
-      double prob_resusp{ 0.5 };          // Probability of transition to water column (dispersion)
-      double prob_resusp_adv{ 1. };       // Probability of transition to water column (advection)
-    } parameters;
-
-    TransitionHelper_EColi_PiecewiseAdvection(Parameters parameters)
-    : parameters{ parameters }
+    TransitionHelper_EColi_PiecewiseAdvection
+    (double time_h_diff,
+     Time_WaterColumn_Base time_watercolumn_base,
+     Time_Hyporheic_Adv_Base time_hyporheic_adv_base,
+     HyporeicTransitionRegion_Base hyporheic_transition_region_base,
+     HyporeicTransitionRegion_Adv_Base hyporheic_transition_region_adv_base,
+     Time_WaterColumn_Surge time_watercolumn_surge,
+     Time_Hyporheic_Adv_Surge time_hyporheic_adv_surge,
+     HyporeicTransitionRegion_Surge hyporheic_transition_region_surge,
+     HyporeicTransitionRegion_Adv_Surge hyporheic_transition_region_adv_surge,
+     Time_Bed time_bed)
+    : time_h_diff{ time_h_diff }
+    , time_watercolumn_base{ time_watercolumn_base }
+    , time_hyporheic_adv_base{ time_hyporheic_adv_base }
+    , hyporheic_transition_region_base{ hyporheic_transition_region_base }
+    , hyporheic_transition_region_adv_base{ hyporheic_transition_region_adv_base }
+    , time_watercolumn_surge{ time_watercolumn_surge }
+    , time_hyporheic_adv_surge{ time_hyporheic_adv_surge }
+    , hyporheic_transition_region_surge{ hyporheic_transition_region_surge }
+    , hyporheic_transition_region_adv_surge{ hyporheic_transition_region_adv_surge }
+    , time_bed{ time_bed }
     {}
 
     // Return the time to the next transition and the new region as a pair
@@ -258,13 +287,13 @@ namespace ecoli
       switch (state.region)
       {
         case 0:
-          return transition_watercolumn(state,advection);
+          return transition_watercolumn(state, advection);
 
         case 1:
-          return transition_hyporheic(state,advection);
+          return transition_hyporheic(state, advection);
 
         case 2:
-          return transition_bed(state,advection);
+          return transition_bed(state, advection);
 
         default:
           throw std::runtime_error{ "Invalid region." };
@@ -275,32 +304,35 @@ namespace ecoli
     // Random number generation
     std::mt19937 rng{ std::random_device{}() };
     std::exponential_distribution<double> dist_exp{};
-    std::bernoulli_distribution dist_ber_disp{
-      1.-parameters.prob_resusp };
-    std::bernoulli_distribution dist_ber_adv{
-      1.-parameters.prob_resusp_adv };
-    stochastic::skewedlevystable_distribution<double>
-      dist_lev{ parameters.alpha_b };
 
     double time_watercolumn(double advection, bool surge)
-    { return parameters.time_watercolumn(advection, surge)*
-        dist_exp(rng); }
-
+    {
+      return surge
+      ? time_watercolumn_surge(advection)*dist_exp(rng)
+      : time_watercolumn_base(advection)*dist_exp(rng);
+    }
+    
     double time_hyporheic_adv(double advection, bool surge)
-    { return parameters.time_hyporheic_adv(advection, surge)*
-        dist_exp(rng); }
+    {
+      return surge
+      ? time_hyporheic_adv_surge(advection)*dist_exp(rng)
+      : time_hyporheic_adv_base(advection)*dist_exp(rng);
+    }
 
-    double time_bed()
-    { return parameters.time_b*dist_lev(rng); }
+    double time_hyporheic_diff()
+    { return time_h_diff*dist_exp(rng); }
 
-    double time_hyporheic_disp()
-    { return parameters.time_h_disp*dist_exp(rng); }
-
-    std::size_t region_hyporheic_disp()
-    { return 2*dist_ber_disp(rng); }
-
+    std::size_t region_hyporheic_diff()
+    {
+      return hyporheic_transition_region_base();
+    }
+    
     std::size_t region_hyporheic_adv(bool surge)
-    { return surge ? 0 : 2*dist_ber_adv(rng); }
+    {
+      return surge
+      ? hyporheic_transition_region_adv_surge()
+      : hyporheic_transition_region_adv_base();
+    }
 
     template <typename State_t, typename Advection>
     auto transition_watercolumn
@@ -355,20 +387,20 @@ namespace ecoli
       return region_time;
     }
 
-    // If time by advection < than by dispersion, transition probabilities to water column/bed by advection
-    // Otherwise, transition probabilities to water column/bed by dispersion
+    // If time by advection < than by diffusion, transition probabilities to water column/bed by advection
+    // Otherwise, transition probabilities to water column/bed by diffusion
     template <typename State_t, typename Advection>
     auto transition_hyporheic
     (State_t const& state, Advection const& advection)
     {
       std::pair<std::size_t, double> region_time;
 
-      // Time to transition by dispersion
-      const double time_disp = time_hyporheic_disp();
+      // Time to transition by diffusion
+      const double time_diff = time_hyporheic_diff();
 
-      // Advection window for current time and for the time corresponding to the dispersion transition
+      // Advection window for current time and for the time corresponding to the diffusive transition
       auto const adv_it_min = advection.iterator(state.time);
-      auto const adv_it_max = advection.iterator(state.time+time_disp);
+      auto const adv_it_max = advection.iterator(state.time+time_diff);
 
       // Compute time to resuspension by advection for first advection window
       double time_adv_window = time_hyporheic_adv(
@@ -380,16 +412,16 @@ namespace ecoli
       if (adv_it_min == adv_it_max)
       {
         //	 Transition by advection
-        if (time_adv_window <= time_disp)
+        if (time_adv_window <= time_diff)
         {
           region_time.first = region_hyporheic_adv(surge);
           region_time.second = time_adv_window;
         }
-        //	 Transition by dispersion
+        //	 Transition by diffusion
         else
         {
-          region_time.first = region_hyporheic_disp();
-          region_time.second = time_disp;
+          region_time.first = region_hyporheic_diff();
+          region_time.second = time_diff;
         }
         return region_time;
       }
@@ -425,15 +457,15 @@ namespace ecoli
       surge = advection.surge(adv_it_max);
       time_adv_window = time_hyporheic_adv(
         advection.velocity(adv_it_max), surge);
-      if (time_advection + time_adv_window <= time_disp)
+      if (time_advection + time_adv_window <= time_diff)
       {
         region_time.first = region_hyporheic_adv(surge);
         region_time.second = time_advection + time_adv_window;
       }
       else
       {
-        region_time.first = region_hyporheic_disp();
-        region_time.second = time_disp;
+        region_time.first = region_hyporheic_diff();
+        region_time.second = time_diff;
       }
       return region_time;
     }
@@ -465,16 +497,15 @@ namespace ecoli
 
   public:
     using Advection = Advection_EColi_Piecewise;
-    using Parameters_residence = typename TransitionHelper::Parameters;
     using Parameters_reaction = typename Reaction::Parameters;
 
     Transitions_EColi
     (Advection advection,
-     Parameters_residence residence_time_parameters,
      Parameters_reaction reaction_parameters,
-     double max_distance)
+     double max_distance,
+     TransitionHelper transition_helper)
     : adv{ advection }
-    , transition_helper{ residence_time_parameters }
+    , transition_helper{ transition_helper }
     , react{ reaction_parameters }
     , max_distance{ max_distance }
     {}

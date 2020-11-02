@@ -127,7 +127,7 @@ namespace operation
     else
     {
       Container output(input.size());
-      minus_scalar(input, cc, input);
+      minus_scalar(input, cc, output);
       return output;
     }
   }
@@ -135,6 +135,37 @@ namespace operation
   template <typename Container, typename Scalar>
   void minus_scalar_InPlace(Container& input, Scalar cc)
   { minus_scalar(input, cc, input); }
+  
+  // Element-wise subtraction of scalar
+  template <typename Container, typename Scalar, typename Container_out>
+  void scalar_minus(Scalar cc, Container const& input, Container_out& output)
+  {
+    if constexpr (useful::has_minus_v<Container, Scalar>)
+      output = cc - input;
+    else
+    {
+      using value_type = typename Container_out::value_type;
+      for (std::size_t ii = 0; ii < output.size(); ++ii)
+        output[ii] = value_type(cc)-value_type(input[ii]);
+    }
+  }
+
+  template <typename Container, typename Scalar>
+  auto scalar_minus(Scalar cc, Container const& input)
+  {
+    if constexpr (useful::has_minus_v<Container, Scalar>)
+      return cc - input;
+    else
+    {
+      Container output(input.size());
+      scalar_minus(cc, input, input);
+      return output;
+    }
+  }
+
+  template <typename Container, typename Scalar>
+  void scalar_minus_InPlace(Scalar cc, Container& input)
+  { scalar_minus(cc, input, input); }
 
   // Element-wise subtraction
   template <typename Container_1, typename Container_2, typename Container_out>

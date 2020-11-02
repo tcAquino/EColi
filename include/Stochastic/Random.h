@@ -11,15 +11,18 @@
 #ifndef Stochastic_Random_h
 #define Stochastic_Random_h
 
+#include <algorithm>
 #include <array>
 #include <cmath>
+#include <list>
 #include <random>
-#include <utility>
 #include <stdexcept>
+#include <utility>
 #include <vector>
-#include "general/useful.h"
 #include "general/Constants.h"
 #include "general/Operations.h"
+#include "general/Ranges.h"
+#include "general/useful.h"
 
 namespace stochastic
 {
@@ -70,7 +73,7 @@ namespace stochastic
   // alpha : exponent, pdf $\sim t^{-1-\alpha}$
   // sigma : scale parameter
   // mu : location parameter
-  // Note: tail \sim -sigma * tan(alpha*pi/2) * t^{-1-\alpha}/gamma(-alpha)
+  // Note: tail \sim -sigma^alpha * tan(alpha*pi/2) * t^{-1-\alpha}/gamma(-alpha)
   template <typename Value_type = double>
   class skewedlevystable_distribution
   {
@@ -255,7 +258,7 @@ namespace stochastic
 
   // probs are cumulative probabilities (not necessarily normalized), p(0), p(0)+p(1), ....
   // Pick returns i with probability p(i)
-  template<typename Container, typename Engine_t = std::mt19937>
+  template <typename Container, typename Engine_t = std::mt19937>
   std::size_t pick(Container const& probs, Engine_t& rng)
   {
     typename Container::value_type rnd =
@@ -269,7 +272,7 @@ namespace stochastic
 
   // Generates a random non-repeating sequence of
   // subset.size() elements out of {0, 1, ..., total-1}
-  template<typename Engine_t = std::mt19937>
+  template <typename Engine_t = std::mt19937>
   void randSubset(std::size_t total, std::vector<std::size_t>& subset, Engine_t& rng)
   {
     std::vector<std::size_t> set;
@@ -288,13 +291,98 @@ namespace stochastic
   
   // Generates a random non-repeating sequence of
   // subset_size elements out of {0, 1, ..., total - 1}
-  template<typename Engine_t = std::mt19937>
+  template <typename Engine_t = std::mt19937>
   std::vector<std::size_t> randSubset(std::size_t total, std::size_t subset_size, Engine_t& rng)
   {
     std::vector<std::size_t> subset(subset_size);
     RandSubset(total, subset, rng);
     
     return subset;
+  }
+  
+  struct Logspacing{};
+  struct Linspacing{};
+  
+  template <typename Spacing, typename Container>
+  auto cdf
+  (Container& samples, double min_edge, double max_edge, std::size_t nr_bins)
+  {
+    std::pair<std::vector<double>, std::vector<double>> cdf;
+    cdf.first.reserve(nr_bins);
+    cdf.second.reserve(nr_bins);
+    std::sort(samples);
+    
+    std::vector<double> edges;
+    if constexpr (std::is_same<Spacing, Logspacing>::value)
+      edges = range::logspace(min_edge, max_edge, nr_bins+1);
+    else if constexpr (std::is_same<Spacing, Logspacing>::value)
+      edges = range::linspace(min_edge, max_edge, nr_bins+1);
+    else
+      throw useful::bad_parameters();
+    
+    for (std::size_t ii = 1; ii < edges.size(); ++ii)
+      cdf.first.push_back(edges[ii]+edges[ii-1]/2.);
+    
+    auto start = std::lower_bound(std::begin(samples), std::end(samples), edges[0]);
+    for (std::size_t ii = 1; ii < edges.size(); ++ii)
+    {
+      double freq = double(std::lower_bound(std::begin(samples), std::end(samples), edges[ii]) - start)/samples.size();
+      cdf.second.push_back(freq);
+    }
+    
+    return cdf;
+  }
+  
+  template <typename Spacing, typename Container>
+  auto cdf
+  (Container& samples, std::size_t nr_bins, double min_factor = 0.5, double max_factor = 2.)
+  {
+    std::pair<std::vector<double>, std::vector<double>> cdf;
+    cdf.first.reserve(nr_bins);
+    cdf.second.reserve(nr_bins);
+    std::sort(std::begin(samples), std::end(samples));
+    
+    double min_edge = samples[0]/2.;
+    double max_edge = 2.*samples[samples.size()-1];
+    
+    std::vector<double> edges;
+    if constexpr (std::is_same<Spacing, Logspacing>::value)
+      edges = range::logspace(min_edge, max_edge, nr_bins+1);
+    else if constexpr (std::is_same<Spacing, Logspacing>::value)
+      edges = range::linspace(min_edge, max_edge, nr_bins+1);
+    else
+      throw useful::bad_parameters();
+    
+    for (std::size_t ii = 1; ii < edges.size(); ++ii)
+      cdf.first.push_back((edges[ii]+edges[ii-1])/2.);
+    
+    for (std::size_t ii = 1; ii < edges.size(); ++ii)
+    {
+      double freq = double(std::lower_bound(std::begin(samples), std::end(samples), edges[ii]) - std::begin(samples))/samples.size();
+      cdf.second.push_back(freq);
+    }
+    
+    return cdf;
+  }
+  
+  template <typename Spacing, typename Container>
+  auto cdf_tail
+  (Container& samples, double min_edge, double max_edge, std::size_t nr_bins)
+  {
+    auto cdf_tail = cdf<Spacing>(samples, min_edge, max_edge, nr_bins);
+    operation::scalar_minus_InPlace(1., cdf_tail.second);
+    
+    return cdf_tail;
+  }
+  
+  template <typename Spacing, typename Container>
+  auto cdf_tail
+  (Container& samples, std::size_t nr_bins, double min_factor = 0.5, double max_factor = 2.)
+  {
+    auto cdf_tail = cdf<Spacing>(samples, nr_bins, min_factor, max_factor);
+    operation::scalar_minus_InPlace(1., cdf_tail.second);
+    
+    return cdf_tail;
   }
 }
 

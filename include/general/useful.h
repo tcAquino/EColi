@@ -14,7 +14,9 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <functional>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -23,6 +25,7 @@
 
 namespace useful
 {
+  
   // Check if container contains val
   // Warning: container must be sorted
   template <typename T, typename U>
@@ -46,6 +49,7 @@ namespace useful
     return string.size() >= suffix.size() &&
       string.substr(string.size() - suffix.size()) == suffix;
   }
+  
   std::vector<std::string> split
   (std::string const& string, std::string const& delimiter = " ",
    bool empty_entries = false)
@@ -121,7 +125,96 @@ namespace useful
     return std::invalid_argument{ "Inappropriate parameters" };
   }
   
+  //Load 1-column file into vectors of doubles
+  auto load_1
+  (std::string const& filename, std::size_t nr_estimate = 0,
+   std::size_t header_lines = 0,
+   std::string const& delim = " ")
+  {
+    using Value = double;
+    using Container = std::vector<Value>;
+    Container values;
+    values.reserve(nr_estimate);
+    
+    std::ifstream file(filename);
+    std::string line;
+    for (std::size_t ll = 0; ll < header_lines; ++ll)
+      getline(file, line);
+    
+    while (getline(file, line))
+    {
+      std::vector<std::string> split_line = split(line, delim);
+      if (split_line.size() != 1)
+        throw parse_error(filename, line);
+      values.push_back(std::stod(split_line[0]));
+    }
+    file.close();
+    
+    return values;
+  }
   
+  //Load 2-column file into pair of vectors of doubles
+  auto load_2
+ (std::string const& filename, std::size_t nr_estimate = 0,
+  std::size_t header_lines = 0, std::string const& delim = " ")
+  {
+    using Value = double;
+    using Container = std::vector<Value>;
+    std::pair<Container, Container> values;
+    values.first.reserve(nr_estimate);
+    values.second.reserve(nr_estimate);
+    
+    std::ifstream file(filename);
+    if (!file.is_open())
+      throw useful::open_read_error(filename);
+    std::string line;
+    for (std::size_t ll = 0; ll < header_lines; ++ll)
+      getline(file, line);
+    
+    while (getline(file, line))
+    {
+      std::vector<std::string> split_line = split(line, delim);
+      if (split_line.size() != 2)
+        throw parse_error(filename, line);
+      
+      values.first.push_back(std::stod(split_line[0]));
+      values.second.push_back(std::stod(split_line[1]));
+    }
+    file.close();
+    
+    return values;
+  }
+  
+  //Load file into vector of vectors of doubles
+  auto load(std::string const& filename, std::size_t nr_columns,
+            std::size_t nr_estimate = 0,
+              std::size_t header_lines = 0,
+              std::string const& delim = " ")
+  {
+    using Value = double;
+    using Container = std::vector<Value>;
+    std::vector<Container> values(nr_columns);
+    for (auto& val : values)
+      val.reserve(nr_estimate);
+    
+    std::ifstream file(filename);
+    std::string line;
+    for (std::size_t ll = 0; ll < header_lines; ++ll)
+      getline(file, line);
+    
+    while (getline(file, line))
+    {
+      std::vector<std::string> split_line = split(line, delim);
+      if (split_line.size() != nr_columns)
+        throw parse_error(filename, line);
+      
+      for (std::size_t cc = 0; cc < nr_columns; ++cc)
+        values[cc].push_back(std::stod(split_line[cc]));
+    }
+    file.close();
+    
+    return values;
+  }
   
   // From Anton Dyachenko's answer here:
   // https://stackoverflow.com/questions/6534041/how-to-check-whether-operator-exists
@@ -160,8 +253,7 @@ namespace useful
   constexpr auto has_divides_v = has_divides<L, R>::value;
   
   // From Passer By's answer here:
-  // https://stackoverflow.com/questions/51404763/c-compile-time
-  // -check-that-an-overloaded-function-can-be-called-with-a-certain
+  // https://stackoverflow.com/questions/51404763/c-compile-time-check-that-an-overloaded-function-can-be-called-with-a-certain
   template <typename = void, typename... Args>
   struct can_call_sqrt : std::false_type {};
   template <typename... Args>
@@ -179,15 +271,6 @@ namespace useful
   : std::true_type {};
   template <typename... Args>
   inline constexpr bool can_call_abs_v = can_call_abs<void, Args...>::value;
-  
-  template <typename Stream, typename = void, typename... Args>
-  struct can_output : std::false_type {};
-  template <typename Stream, typename... Args>
-  struct can_output<Stream,
-  std::void_t<decltype(std::abs(std::declval<Args>()...))>, Args...>
-  : std::true_type {};
-  template <typename Stream, typename... Args>
-  inline constexpr bool can_output_v = can_output<Stream, void, Args...>::value;
   
   template <typename T, typename U, typename Comp_less, typename Comp_eq>
   bool contains
@@ -239,7 +322,8 @@ namespace useful
   (Stream& stream, Container const& container,
    bool delimit_first = 0, std::string delimiter = "\t")
   {
-    if constexpr (can_output_v<Stream, Container>)
+    // TODO: Choose this specialization when stream << container exists
+    if constexpr (std::is_pod<Container>::value)
     {
       if (delimit_first)
         stream << delimiter;
@@ -254,6 +338,21 @@ namespace useful
         delim = delimiter;
       }
     }
+  }
+  
+  auto read
+  (std::string const& filename)
+  {
+    std::ifstream file{ filename };
+    if (!file.is_open())
+      throw useful::open_read_error(filename);
+    std::vector<double> vals;
+    double val;
+    while(file >> val)
+      vals.push_back(val);
+    file.close();
+
+    return vals;
   }
   
   struct DoNothing
