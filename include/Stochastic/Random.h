@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <complex>
 #include <list>
 #include <random>
 #include <stdexcept>
@@ -335,20 +336,30 @@ namespace stochastic
   
   template <typename Spacing, typename Container>
   auto cdf
-  (Container& samples, std::size_t nr_bins, double min_factor = 0.5, double max_factor = 2.)
+  (Container& samples, std::size_t nr_bins, double min_factor = 0.9, double max_factor = 1.1)
   {
     std::pair<std::vector<double>, std::vector<double>> cdf;
+    
     cdf.first.reserve(nr_bins);
     cdf.second.reserve(nr_bins);
     std::sort(std::begin(samples), std::end(samples));
     
-    double min_edge = samples[0]/2.;
-    double max_edge = 2.*samples[samples.size()-1];
+    std::size_t nr_samples = samples.size();
+    std::size_t zero_samples = 0;
+    if constexpr (std::is_same<Spacing, Logspacing>::value)
+    {
+      samples.erase(std::remove(std::begin(samples), std::end(samples), 0.),
+                    std::end(samples));
+      zero_samples = nr_samples - samples.size();
+    }
+    
+    double min_edge = min_factor*samples[0];
+    double max_edge = max_factor*samples[samples.size()-1];
     
     std::vector<double> edges;
     if constexpr (std::is_same<Spacing, Logspacing>::value)
       edges = range::logspace(min_edge, max_edge, nr_bins+1);
-    else if constexpr (std::is_same<Spacing, Logspacing>::value)
+    else if constexpr (std::is_same<Spacing, Linspacing>::value)
       edges = range::linspace(min_edge, max_edge, nr_bins+1);
     else
       throw useful::bad_parameters();
@@ -358,9 +369,11 @@ namespace stochastic
     
     for (std::size_t ii = 1; ii < edges.size(); ++ii)
     {
-      double freq = double(std::lower_bound(std::begin(samples), std::end(samples), edges[ii]) - std::begin(samples))/samples.size();
+      double freq = double(std::lower_bound(std::begin(samples), std::end(samples), edges[ii]) - std::begin(samples))/nr_samples;
       cdf.second.push_back(freq);
     }
+    
+    cdf.second[0] += zero_samples/nr_samples;
     
     return cdf;
   }
@@ -377,7 +390,7 @@ namespace stochastic
   
   template <typename Spacing, typename Container>
   auto cdf_tail
-  (Container& samples, std::size_t nr_bins, double min_factor = 0.5, double max_factor = 2.)
+  (Container& samples, std::size_t nr_bins, double min_factor = 0.9, double max_factor = 1.1)
   {
     auto cdf_tail = cdf<Spacing>(samples, nr_bins, min_factor, max_factor);
     operation::scalar_minus_InPlace(1., cdf_tail.second);

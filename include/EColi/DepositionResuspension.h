@@ -82,10 +82,10 @@ namespace ecoli
     
     double operator() (double advection)
     {
-      double rate_adv = advection > min_val_adv
-      ? advection_coeff*advection
+      double rate = advection > min_val_adv
+      ? advection_coeff*(advection-min_val_adv)+rate_base
       : 0.;
-      return 1./(rate_base + rate_adv);
+      return 1./rate;
     }
   };
 
@@ -104,10 +104,10 @@ namespace ecoli
     
     double operator() (double advection)
     {
-      double rate_adv = advection > min_val_adv
-      ? advection_coeff*advection*advection
+      double rate = advection > min_val_adv
+      ? advection_coeff*(advection*advection-min_val_adv*min_val_adv)+rate_base
       : 0.;
-      return 1./(rate_base + rate_adv);
+      return 1./rate;
     }
   };
 

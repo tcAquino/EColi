@@ -94,6 +94,10 @@ namespace ctrw
         ++pp;
       }
     }
+    
+    // Set particle's new and old state to given state
+    void set(std::size_t part, State const& state)
+    { particle_container[part].set(state); }
 
     // Remove particles satisfying a criterium
     template<typename Criterium>

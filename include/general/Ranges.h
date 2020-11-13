@@ -19,7 +19,7 @@ namespace range
   // Linear partition of [x_L, x_R]
   // with nr_points points
   template <typename Container = std::vector<double>>
-  Container linspace(double x_L, double x_R, size_t nr_points)
+  Container linspace(double x_L, double x_R, std::size_t nr_points)
   {
     double inc = (x_R - x_L) / (nr_points - 1);
     
@@ -35,7 +35,7 @@ namespace range
   // log partition of [x_L, x_R]
   // with nr_points points in output
   template <typename Container = std::vector<double>>
-  Container logspace(double x_L, double x_R, size_t nr_points)
+  Container logspace(double x_L, double x_R, std::size_t nr_points)
   {
     double inc = std::pow(x_R / x_L, 1. / (nr_points - 1));
 
@@ -83,7 +83,7 @@ namespace range
   }
 
   // Use with std::generate to populate vector with the sequence (seed, seed + 1, seed + 2, ...)
-  template < typename Type >
+  template <typename Type>
   struct gen
   {
     Type val;

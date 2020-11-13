@@ -32,7 +32,7 @@
 
 int main(int argc, const char * argv[])
 {
-  using namespace ecoli::model_3;
+  using namespace ecoli::model_4;
   
   if (argc == 1)
   {
