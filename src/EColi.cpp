@@ -32,7 +32,7 @@
 
 int main(int argc, const char * argv[])
 {
-  using namespace ecoli::model_4;
+  using namespace ecoli::model_3;
   
   if (argc == 1)
   {
@@ -42,8 +42,11 @@ int main(int argc, const char * argv[])
 
   Parameters parameters(argc, argv);
   
-  std::string flow_dir = "../flow";
-  std::string output_dir = "../data";
+//  std::string flow_dir = "../flow";
+//  std::string output_dir = "../data";
+  
+  std::string flow_dir = "/Users/tomasaquino/Dropbox/EColi/code/flow";
+  std::string output_dir = "/Users/tomasaquino/Dropbox/EColi/code/data";
 
   auto time_watercolumn = make_MeanTime_WaterColumn_Base(parameters);
   auto time_hyporheic_adv = make_MeanTime_Hyporheic_Adv_Base(parameters);
