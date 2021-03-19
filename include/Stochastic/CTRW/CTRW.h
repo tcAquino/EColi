@@ -158,7 +158,7 @@ namespace ctrw
           part.transition(transitions_particle);
     }
 
-    // Particles make one transition
+    // Each particle makes one transition
     template<typename Transitions_Particle>
     void step(Transitions_Particle& transitions_particle)
     {
@@ -166,13 +166,13 @@ namespace ctrw
         part.transition(transitions_particle);
     }
     
-    // Particles make one transition if criteritum is satisfied
+    // Each particle for which criterium is satisfied makes one transition
     template<typename Transitions_Particle, typename Criterium>
     void step(Criterium criterium, Transitions_Particle& transitions_particle)
     {
       for (auto& part : particle_container)
         if (criterium(part))
-          part.Transition(transitions_particle);
+          part.transition(transitions_particle);
     }
 
     // Get reference to particle container

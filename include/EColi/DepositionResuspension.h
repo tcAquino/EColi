@@ -16,12 +16,12 @@ namespace ecoli
 {
   struct MeanTime_Quadratic
   {
-    const double rate_base;
     const double advection_coeff;
+    const double rate_base;
     
-    MeanTime_Quadratic(double rate_base, double advection_coeff)
-    : rate_base{ rate_base }
-    , advection_coeff{ advection_coeff }
+    MeanTime_Quadratic(double advection_coeff, double rate_base = 0.)
+    : advection_coeff{ advection_coeff }
+    , rate_base{ rate_base }
     {}
     
     double operator() (double advection)
