@@ -794,7 +794,7 @@ namespace ecoli
   
   namespace model_5
   {
-    const std::string model_name = { "model_2" };
+    const std::string model_name = { "model_5" };
     
     struct Parameters
     {
