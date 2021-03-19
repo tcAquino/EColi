@@ -71,21 +71,24 @@ namespace ecoli
   {
     const double advection_coeff;
     const double min_val_adv;
+    const double rate_cutoff;
     const double rate_base;
     
     MeanTime_Linear_Cutoff
-    (double advection_coeff, double min_val_adv, double rate_base = 0.)
+    (double advection_coeff, double min_val_adv,
+     double rate_cutoff, double rate_base = 0.)
     : advection_coeff{ advection_coeff }
     , min_val_adv{ min_val_adv }
+    , rate_cutoff{ rate_cutoff }
     , rate_base{ rate_base }
     {}
     
     double operator() (double advection)
     {
-      double rate = advection > min_val_adv
-      ? advection_coeff*(advection-min_val_adv)+rate_base
+      double rate_adv = advection > min_val_adv
+      ? advection_coeff*(advection-min_val_adv)+rate_cutoff
       : 0.;
-      return 1./rate;
+      return 1./(rate_adv+rate_base);
     }
   };
 
@@ -93,21 +96,25 @@ namespace ecoli
   {
     const double advection_coeff;
     const double min_val_adv;
+    const double rate_cutoff;
     const double rate_base;
     
     MeanTime_Quadratic_Cutoff
-    (double advection_coeff, double min_val_adv, double rate_base = 0.)
+    (double advection_coeff, double min_val_adv,
+     double rate_cutoff, double rate_base = 0.)
     : advection_coeff{ advection_coeff }
     , min_val_adv{ min_val_adv }
+    , rate_cutoff{ rate_cutoff }
     , rate_base{ rate_base }
     {}
     
     double operator() (double advection)
     {
-      double rate = advection > min_val_adv
-      ? advection_coeff*(advection*advection-min_val_adv*min_val_adv)+rate_base
+      double rate_adv = advection > min_val_adv
+      ? advection_coeff*(advection*advection-min_val_adv*min_val_adv)
+        +rate_cutoff
       : 0.;
-      return 1./rate;
+      return 1./(rate_adv+rate_base);
     }
   };
 
@@ -116,14 +123,16 @@ namespace ecoli
     const double advection_coeff_linear;
     const double advection_coeff_quadratic;
     const double min_val_adv;
+    const double rate_cutoff;
     const double rate_base;
       
       MeanTime_LinearQuadratic_Cutoff
       (double advection_coeff_linear, double advection_coeff_quadratic,
-      double min_val_adv, double rate_base = 0.)
+      double min_val_adv, double rate_cutoff, double rate_base = 0.)
       : advection_coeff_linear{ advection_coeff_linear }
       , advection_coeff_quadratic{ advection_coeff_quadratic }
       , min_val_adv{ min_val_adv }
+      , rate_cutoff{ rate_cutoff }
       , rate_base{ rate_base }
       {}
       
@@ -132,8 +141,9 @@ namespace ecoli
         double rate_adv = advection > min_val_adv
         ? advection_coeff_linear*advection
           + advection_coeff_quadratic*advection*advection
+          + rate_cutoff
         : 0.;
-        return 1./(rate_base + rate_adv);
+        return 1./(rate_adv+rate_base);
       }
   };
   
