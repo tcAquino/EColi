@@ -118,7 +118,7 @@ namespace ecoli
                   << "\tnr_particles            : Number of particles per injection\n"
                   << "\tflow_name               : Name of flow data\n"
                   << "\trun_nr                  : Nonnegative integer index of output data file\n"
-                  << "\tzones_name [""]         : Name of measurement zone specifications\n";
+                  << "\tzones_name [\"\"]         : Name of measurement zone specifications\n";
       }
       
       std::string parameter_str()
@@ -317,7 +317,7 @@ namespace ecoli
                   << "\tnr_particles            : Number of particles per injection\n"
                   << "\tflow_name               : Name of flow data\n"
                   << "\trun_nr                  : Nonnegative integer index of output data file\n"
-                  << "\tzones_name [""]         : Name of measurement zone specifications\n";
+                  << "\tzones_name [\"\"]         : Name of measurement zone specifications\n";
       }
       
       std::string parameter_str()
@@ -516,7 +516,7 @@ namespace ecoli
                   << "\tnr_particles            : Number of particles per injection\n"
                   << "\tflow_name               : Name of flow data\n"
                   << "\trun_nr                  : Nonnegative integer index of output data file\n"
-                  << "\tzones_name [""]         : Name of measurement zone specifications\n";
+                  << "\tzones_name [\"\"]         : Name of measurement zone specifications\n";
       }
       
       std::string parameter_str()
@@ -721,7 +721,7 @@ namespace ecoli
                   << "\tnr_particles            : Number of particles per injection\n"
                   << "\tflow_name               : Name of flow data\n"
                   << "\trun_nr                  : Nonnegative integer index of output data file\n"
-                  << "\tzones_name [""]         : Name of measurement zone specifications\n";
+                  << "\tzones_name [\"\"]         : Name of measurement zone specifications\n";
       }
       
       std::string parameter_str()
@@ -923,7 +923,7 @@ namespace ecoli
                   << "\tnr_particles            : Number of particles per injection\n"
                   << "\tflow_name               : Name of flow data\n"
                   << "\trun_nr                  : Nonnegative integer index of output data file\n"
-                  << "\tzones_name [""]         : Name of measurement zone specifications\n";
+                  << "\tzones_name [\"\"]         : Name of measurement zone specifications\n";
       }
       
       std::string parameter_str()
