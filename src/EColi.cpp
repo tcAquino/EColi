@@ -60,7 +60,8 @@ int main(int argc, const char * argv[])
 
   using State = ecoli::State_EColi;
   using CTRW = ctrw::CTRW<State>;
-  using Measurer = ecoli::Measurer_Store_Mass_Region;
+  using Measurer_Domain = ecoli::Measurer_Store_Mass_Region;
+  using Measurer_Zones = ecoli::Measurer_Store_Mass_Region_Zones;
 
   ecoli::Transitions_EColi transitions{
     { flow_dir + "/flow_" + parameters.flow_name + ".dat",
@@ -77,7 +78,7 @@ int main(int argc, const char * argv[])
       time_bed }
   };
 
-  auto measure_times =
+  auto get_measure_times =
   [&parameters]()
   {
     if (parameters.measure_spacing.compare("lin") == 0)
@@ -90,14 +91,35 @@ int main(int argc, const char * argv[])
     throw useful::bad_parameters();
   };
   
+  auto get_measure_zones =
+  [&parameters]()
+  {
+    std::vector<std::pair<double, double>> zones;
+    if (parameters.zones_name.empty())
+      return zones;
+    
+    auto file = useful::open_read("../data/zones_"
+      + parameters.zones_name + ".dat");
+    double left, right;
+    while (file >> left >> right)
+      zones.push_back({ left, right });
+    return zones;
+  };
+  
   // Prepare output
-  std::string filename_output{ output_dir + "/Data_EColi_RegionMass_" + model_name + "_"
+  std::string filename_output_domain{ output_dir
+    + "/Data_EColi_RegionMass_" + model_name + "_"
+    + parameters.parameter_str() + ".dat" };
+  std::string filename_output_zones{ output_dir
+    + "/Data_EColi_RegionMass_Zones_" + model_name + "_"
     + parameters.parameter_str() + ".dat" };
   
   std::cout << std::setprecision(2)
             << std::scientific;
 
-  Measurer measurer{ measure_times() };
+  auto measure_times = get_measure_times();
+  Measurer_Domain measurer_domain{ measure_times };
+  Measurer_Zones measurer_zones{ measure_times, get_measure_zones() };
   
   // Handle continuous injection by discretizing
   // and simulating separately to conserve memory
@@ -140,12 +162,13 @@ int main(int argc, const char * argv[])
     CTRW ctrw{ make_particles() };
 
     std::cout << "injection time = " << time_injection << "\n";
-    for (auto time_measure : measurer.measure_times)
+    for (auto time_measure : measure_times)
     {
       // Ignore measure times before current injection time
       if (time_measure < time_injection)
       {
-        measurer.skip();
+        measurer_domain.skip();
+        measurer_zones.skip();
         continue;
       }
 
@@ -155,11 +178,14 @@ int main(int argc, const char * argv[])
        { return part.state_new().time < time_measure
          && part.state_new().region != 3; },
        transitions);
-      measurer(ctrw, transitions.reaction());
+      measurer_domain(ctrw, transitions.reaction());
+      measurer_zones(ctrw, transitions.reaction(), transitions.advection());
     }
-    measurer.reset_measure();
+    measurer_domain.reset_measure();
+    measurer_zones.reset_measure();
   }
-  measurer.print(filename_output);
+  measurer_domain.print(filename_output_domain);
+  measurer_zones.print(filename_output_zones);
   
   return 0;
 }

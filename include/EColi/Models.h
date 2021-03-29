@@ -50,6 +50,7 @@ namespace ecoli
       std::size_t nr_particles;
       std::string flow_name;
       std::size_t run_nr;
+      std::string zones_name;
       
       Parameters(int argc, const char * argv[])
       {
@@ -82,11 +83,15 @@ namespace ecoli
         nr_particles = strtoul(argv[arg++], NULL, 0);
         flow_name = argv[arg++];
         run_nr = strtoul(argv[arg++], NULL, 0);
+        zones_name = argc > arg
+        ? argv[arg++]
+        : "";
       }
       
       static void parameter_list()
       {
-        std::cout << "EColi : parameters:\n"
+        std::cout << "Model name: " << model_name << "\n"
+                  << "Parameters (default in []):\n"
                   << "\ttime_w_diff             : Mean dispersive residence time in water column\n"
                   << "\ttime_h_diff             : Mean dispersive residence time in hyporheic zone\n"
                   << "\ttime_b                  : Characteristic residence time in bed\n"
@@ -112,7 +117,8 @@ namespace ecoli
                   << "\t                          log - Logarithmic time spacing\n"
                   << "\tnr_particles            : Number of particles per injection\n"
                   << "\tflow_name               : Name of flow data\n"
-                  << "\trun_nr                  : Nonnegative integer index of output data file\n";
+                  << "\trun_nr                  : Nonnegative integer index of output data file\n"
+                  << "\tzones_name [""]         : Name of measurement zone specifications\n";
       }
       
       std::string parameter_str()
@@ -142,8 +148,10 @@ namespace ecoli
                << nr_measurements << "_"
                << measure_spacing << "_"
                << nr_particles << "_"
-               << flow_name << "_"
-               << run_nr;
+               << flow_name << "_";
+               if (!zones_name.empty())
+                 stream << zones_name << "_";
+               stream << run_nr;
         return stream.str();
       }
     };
@@ -241,6 +249,7 @@ namespace ecoli
       std::size_t nr_particles;
       std::string flow_name;
       std::size_t run_nr;
+      std::string zones_name;
       
       Parameters(int argc, const char * argv[])
       {
@@ -273,11 +282,15 @@ namespace ecoli
         nr_particles = strtoul(argv[arg++], NULL, 0);
         flow_name = argv[arg++];
         run_nr = strtoul(argv[arg++], NULL, 0);
+        zones_name = argc > arg
+        ? argv[arg++]
+        : "";
       }
       
       static void parameter_list()
       {
-        std::cout << "EColi : parameters:\n"
+        std::cout << "Model name: " << model_name << "\n"
+                  << "Parameters (default in []):\n"
                   << "\ttime_w_diff             : Mean dispersive residence time in water column\n"
                   << "\ttime_h_diff             : Mean dispersive residence time in hyporheic zone\n"
                   << "\ttime_b                  : Characteristic residence time in bed\n"
@@ -303,7 +316,8 @@ namespace ecoli
                   << "\t                          log - Logarithmic time spacing\n"
                   << "\tnr_particles            : Number of particles per injection\n"
                   << "\tflow_name               : Name of flow data\n"
-                  << "\trun_nr                  : Nonnegative integer index of output data file\n";
+                  << "\trun_nr                  : Nonnegative integer index of output data file\n"
+                  << "\tzones_name [""]         : Name of measurement zone specifications\n";
       }
       
       std::string parameter_str()
@@ -333,8 +347,10 @@ namespace ecoli
                << nr_measurements << "_"
                << measure_spacing << "_"
                << nr_particles << "_"
-               << flow_name << "_"
-               << run_nr;
+               << flow_name << "_";
+               if (!zones_name.empty())
+                 stream << zones_name << "_";
+               stream << run_nr;
         return stream.str();
       }
     };
@@ -432,6 +448,7 @@ namespace ecoli
       std::size_t nr_particles;
       std::string flow_name;
       std::size_t run_nr;
+      std::string zones_name;
       
       Parameters(int argc, const char * argv[])
       {
@@ -464,11 +481,15 @@ namespace ecoli
         nr_particles = strtoul(argv[arg++], NULL, 0);
         flow_name = argv[arg++];
         run_nr = strtoul(argv[arg++], NULL, 0);
+        zones_name = argc > arg
+        ? argv[arg++]
+        : "";
       }
       
       static void parameter_list()
       {
-        std::cout << "EColi : parameters:\n"
+        std::cout << "Model name: " << model_name << "\n"
+                  << "Parameters (default in []):\n"
                   << "\ttime_w_diff             : Mean dispersive residence time in water column\n"
                   << "\ttime_h_diff             : Mean dispersive residence time in hyporheic zone\n"
                   << "\ttime_b                  : Characteristic residence time in bed\n"
@@ -494,7 +515,8 @@ namespace ecoli
                   << "\t                          log - Logarithmic time spacing\n"
                   << "\tnr_particles            : Number of particles per injection\n"
                   << "\tflow_name               : Name of flow data\n"
-                  << "\trun_nr                  : Nonnegative integer index of output data file\n";
+                  << "\trun_nr                  : Nonnegative integer index of output data file\n"
+                  << "\tzones_name [""]         : Name of measurement zone specifications\n";
       }
       
       std::string parameter_str()
@@ -524,8 +546,10 @@ namespace ecoli
                << nr_measurements << "_"
                << measure_spacing << "_"
                << nr_particles << "_"
-               << flow_name << "_"
-               << run_nr;
+               << flow_name << "_";
+               if (!zones_name.empty())
+                 stream << zones_name << "_";
+               stream << run_nr;
         return stream.str();
       }
     };
@@ -625,6 +649,7 @@ namespace ecoli
       std::size_t nr_particles;
       std::string flow_name;
       std::size_t run_nr;
+      std::string zones_name;
       
       Parameters(int argc, const char * argv[])
       {
@@ -659,11 +684,15 @@ namespace ecoli
         nr_particles = strtoul(argv[arg++], NULL, 0);
         flow_name = argv[arg++];
         run_nr = strtoul(argv[arg++], NULL, 0);
+        zones_name = argc > arg
+        ? argv[arg++]
+        : "";
       }
       
       static void parameter_list()
       {
-        std::cout << "EColi : parameters:\n"
+        std::cout << "Model name: " << model_name << "\n"
+                  << "Parameters (default in []):\n"
                   << "\ttime_w_diff             : Mean dispersive residence time in water column\n"
                   << "\ttime_h_diff             : Mean dispersive residence time in hyporheic zone\n"
                   << "\ttime_b                  : Characteristic residence time in bed\n"
@@ -691,7 +720,8 @@ namespace ecoli
                   << "\t                          log - Logarithmic time spacing\n"
                   << "\tnr_particles            : Number of particles per injection\n"
                   << "\tflow_name               : Name of flow data\n"
-                  << "\trun_nr                  : Nonnegative integer index of output data file\n";
+                  << "\trun_nr                  : Nonnegative integer index of output data file\n"
+                  << "\tzones_name [""]         : Name of measurement zone specifications\n";
       }
       
       std::string parameter_str()
@@ -723,8 +753,10 @@ namespace ecoli
                << nr_measurements << "_"
                << measure_spacing << "_"
                << nr_particles << "_"
-               << flow_name << "_"
-               << run_nr;
+               << flow_name << "_";
+               if (!zones_name.empty())
+                 stream << zones_name << "_";
+               stream << run_nr;
         return stream.str();
       }
     };
@@ -823,6 +855,7 @@ namespace ecoli
       std::size_t nr_particles;
       std::string flow_name;
       std::size_t run_nr;
+      std::string zones_name;
       
       Parameters(int argc, const char * argv[])
       {
@@ -855,11 +888,15 @@ namespace ecoli
         nr_particles = strtoul(argv[arg++], NULL, 0);
         flow_name = argv[arg++];
         run_nr = strtoul(argv[arg++], NULL, 0);
+        zones_name = argc > arg
+        ? argv[arg++]
+        : "";
       }
       
       static void parameter_list()
       {
-        std::cout << "EColi : parameters:\n"
+        std::cout << "Model name: " << model_name << "\n"
+                  << "Parameters (default in []):\n"
                   << "\ttime_w_diff             : Mean dispersive residence time in water column\n"
                   << "\ttime_h_diff             : Mean dispersive residence time in hyporheic zone\n"
                   << "\ttime_b                  : Characteristic residence time in bed\n"
@@ -885,7 +922,8 @@ namespace ecoli
                   << "\t                          log - Logarithmic time spacing\n"
                   << "\tnr_particles            : Number of particles per injection\n"
                   << "\tflow_name               : Name of flow data\n"
-                  << "\trun_nr                  : Nonnegative integer index of output data file\n";
+                  << "\trun_nr                  : Nonnegative integer index of output data file\n"
+                  << "\tzones_name [""]         : Name of measurement zone specifications\n";
       }
       
       std::string parameter_str()
@@ -915,8 +953,10 @@ namespace ecoli
                << nr_measurements << "_"
                << measure_spacing << "_"
                << nr_particles << "_"
-               << flow_name << "_"
-               << run_nr;
+               << flow_name << "_";
+               if (!zones_name.empty())
+                 stream << zones_name << "_";
+               stream << run_nr;
         return stream.str();
       }
     };

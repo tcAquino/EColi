@@ -68,8 +68,8 @@ namespace ecoli
     : parameters{ parameters }
     {}
 
-    template <typename State_t>
-    void operator() (State_t& state, double exposure_time) const
+    template <typename State>
+    void operator() (State& state, double exposure_time) const
     {
       state.mass *= std::exp(-parameters.rate[state.region] * exposure_time);
     }
@@ -148,9 +148,9 @@ namespace ecoli
     // Jump length corresponding to moving according to v(t)
     // for t in [state.time, state.time+exposure_time],
     // \int_state.time^{state.time+exposure_time} dt v(t)
-    template <typename State_t>
-    double advection_jump
-    (State_t const& state, double exposure_time) const
+    template <typename State>
+    double jump
+    (State const& state, double exposure_time) const
     {
       // Advection happens only in the water column
       if (state.region == 0)
@@ -164,20 +164,20 @@ namespace ecoli
 
         // Otherwise, compute jump to end of first velocity time window
         double delta_t = time(it_min+1)-state.time;
-        double jump = velocity(it_min)*delta_t;
+        double jump_val = velocity(it_min)*delta_t;
 
         // Intermediate velocity time windows
         for (auto it = it_min + 1; it < it_max; ++it)
         {
           delta_t = time(it+1)-time(it);
-          jump += velocity(it)*delta_t;
+          jump_val += velocity(it)*delta_t;
         }
 
         // Final velocity window
         delta_t = state.time+exposure_time-time(it_max);
-        jump += velocity(it_max)*delta_t;
+        jump_val += velocity(it_max)*delta_t;
 
-        return jump;
+        return jump_val;
       }
       else
       {
@@ -190,9 +190,7 @@ namespace ecoli
 
     Container read(std::string const& filename)
     {
-      std::ifstream file{ filename };
-      if (!file.is_open())
-        throw useful::open_read_error(filename);
+      auto file = useful::open_read(filename);
       Container advection;
       double time, val;
       while(file >> time && file >> val)
@@ -205,12 +203,8 @@ namespace ecoli
     Container read
     (std::string const& filename, std::string const& filename_surge)
     {
-      std::ifstream file{ filename };
-      if (!file.is_open())
-        throw useful::open_read_error(filename);
-      std::ifstream file_surge{ filename_surge };
-      if (!file_surge.is_open())
-        throw useful::open_read_error(filename_surge);
+      auto file = useful::open_read(filename);
+      auto file_surge = useful::open_read(filename);
       Container advection;
       double time, val;
       bool surge;
@@ -280,9 +274,9 @@ namespace ecoli
     {}
 
     // Return the time to the next transition and the new region as a pair
-    template <typename State_t, typename Advection>
+    template <typename State, typename Advection>
     auto operator()
-    (State_t const& state, Advection const& advection)
+    (State const& state, Advection const& advection)
     {
       switch (state.region)
       {
@@ -334,9 +328,9 @@ namespace ecoli
       : hyporheic_transition_region_adv_base();
     }
 
-    template <typename State_t, typename Advection>
+    template <typename State, typename Advection>
     auto transition_watercolumn
-    (State_t const& state, Advection const& advection)
+    (State const& state, Advection const& advection)
     {
       std::pair<std::size_t, double> region_time;
 
@@ -389,9 +383,9 @@ namespace ecoli
 
     // If time by advection < than by diffusion, transition probabilities to water column/bed by advection
     // Otherwise, transition probabilities to water column/bed by diffusion
-    template <typename State_t, typename Advection>
+    template <typename State, typename Advection>
     auto transition_hyporheic
-    (State_t const& state, Advection const& advection)
+    (State const& state, Advection const& advection)
     {
       std::pair<std::size_t, double> region_time;
 
@@ -470,9 +464,9 @@ namespace ecoli
       return region_time;
     }
 
-    template <typename State_t, typename Advection>
+    template <typename State, typename Advection>
     auto transition_bed
-    (State_t const& state, Advection const& advection)
+    (State const& state, Advection const& advection)
     {
       std::pair<std::size_t, double> region_time;
 
@@ -492,10 +486,8 @@ namespace ecoli
   template <typename TransitionHelper>
   class Transitions_EColi
   {
-  private:
-    using Reaction = Reaction_EColi_Decay;
-
   public:
+    using Reaction = Reaction_EColi_Decay;
     using Advection = Advection_EColi_Piecewise;
     using Parameters_reaction = typename Reaction::Parameters;
 
@@ -510,8 +502,8 @@ namespace ecoli
     , max_distance{ max_distance }
     {}
 
-    template <typename State_t>
-    void operator() (State_t& state)
+    template <typename State>
+    void operator() (State& state)
     {
       // Ignore absorbed particles
       if (state.region == 3) return;
@@ -520,7 +512,7 @@ namespace ecoli
       auto region_time = transition_helper(state, adv);
       auto new_region = region_time.first;
       auto exposure_time = region_time.second;
-      auto jump = adv.advection_jump(state, exposure_time);
+      auto jump = adv.jump(state, exposure_time);
 
       // Deal with jump going out of bounds
       // or set the new state as computed
@@ -533,10 +525,10 @@ namespace ecoli
       }
     }
 
-    Advection const& advection()
+    Advection const& advection() const
     { return adv; }
 
-    Reaction const& reaction()
+    Reaction const& reaction() const
     { return react; }
 
   private:
@@ -550,8 +542,8 @@ namespace ecoli
     // set the time to the time of reaching max_distance,
     // and return true.
     // Otherwise, return false
-    template <typename State_t>
-    bool OutOfBounds(State_t& state, double jump)
+    template <typename State>
+    bool OutOfBounds(State& state, double jump)
     {
       // If out of bounds,
       // find out how long until max_distance was reached, update state, and return true
