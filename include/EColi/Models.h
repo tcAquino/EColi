@@ -54,7 +54,7 @@ namespace ecoli
       
       Parameters(int argc, const char * argv[])
       {
-        if (argc != 26)
+        if (argc != 26 && argc != 27)
           throw useful::bad_parameters();
         
         std::size_t arg = 1;
@@ -253,7 +253,7 @@ namespace ecoli
       
       Parameters(int argc, const char * argv[])
       {
-        if (argc != 26)
+        if (argc != 26 && argc != 27)
           throw useful::bad_parameters();
         
         std::size_t arg = 1;
@@ -452,7 +452,7 @@ namespace ecoli
       
       Parameters(int argc, const char * argv[])
       {
-        if (argc != 26)
+        if (argc != 26 && argc != 27)
           throw useful::bad_parameters();
         
         std::size_t arg = 1;
@@ -653,7 +653,7 @@ namespace ecoli
       
       Parameters(int argc, const char * argv[])
       {
-        if (argc != 28)
+        if (argc != 28 && argc != 29)
           throw useful::bad_parameters();
         
         std::size_t arg = 1;
@@ -859,7 +859,7 @@ namespace ecoli
       
       Parameters(int argc, const char * argv[])
       {
-        if (argc != 26)
+        if (argc != 26 && argc != 27)
           throw useful::bad_parameters();
         
         std::size_t arg = 1;
