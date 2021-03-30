@@ -235,6 +235,14 @@ namespace useful
     return values;
   }
   
+  template <typename Type>
+  void read(std::ifstream& input, Type& val)
+  {
+    input >> val;
+    if (input.fail())
+      throw std::runtime_error{ "Could not read value" };
+  }
+  
   // From Anton Dyachenko's answer here:
   // https://stackoverflow.com/questions/6534041/how-to-check-whether-operator-exists
   template <class T, class R, class ... Args>

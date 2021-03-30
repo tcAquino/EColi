@@ -20,7 +20,6 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include "EColi/EColi.h"
@@ -36,11 +35,39 @@ int main(int argc, const char * argv[])
   
   if (argc == 1)
   {
+    std::cout << "EColi : usage\n"
+              << "--------------------------------------------------\n"
+              << "Executable parameters (default in []):\n"
+              << "\tparameters_name   : Name of parameter set. Read parameters\n"
+              << "\t                    from parameters_parameters_name.dat\n"
+              << "\tflow_name         : Name of flow data. Read flow data\n"
+              << "\t                    from ../flow/flow_flow_name.dat,\n"
+              << "\t                    and surge data (if applicable)\n"
+              << "\t                    from ../flow/surge_flow_name.dat\n"
+              << "\trun_nr            : Nonnegative integer index of output data file\n"
+              << "\tzones_name [\"\"] : Name of measurement zone specifications. Read zone\n"
+              << "\t                    specifications from ../data/zones_zones_name.dat\n"
+              << "--------------------------------------------------\n"
+              << "Remaining parameters, see below,\n"
+              << "to be placed in parameters_parameters_name.dat\n"
+              << "--------------------------------------------------\n";
     Parameters::parameter_list();
     return 0;
   }
 
-  Parameters parameters(argc, argv);
+  if (argc != 4 && argc != 5)
+    throw useful::bad_parameters();
+  
+  std::size_t arg = 1;
+  std::string parameters_name = argv[arg++];
+  std::string flow_name = argv[arg++];
+  std::size_t run_nr = strtoul(argv[arg++], NULL, 0);
+  std::string zones_name = argc > arg
+  ? argv[arg++]
+  : "";
+  
+  std::string parameters_dir = "../parameters";
+  Parameters parameters(parameters_dir + "/parameters_" + parameters_name);
   
   std::string flow_dir = "../flow";
   std::string output_dir = "../data";
@@ -61,11 +88,11 @@ int main(int argc, const char * argv[])
   using Measurer_Zones = ecoli::Measurer_Store_Mass_Region_Zones;
 
   ecoli::Transitions_EColi transitions{
-    { flow_dir + "/flow_" + parameters.flow_name + ".dat",
-      flow_dir + "/surge_" + parameters.flow_name + ".dat" },  // Advection info
+    { flow_dir + "/flow_" + flow_name + ".dat",
+      flow_dir + "/surge_" + flow_name + ".dat" },  // Advection info
     { parameters.rate_decay_w,
-      parameters.rate_decay_h, parameters.rate_decay_b },      // Reaction parameters
-    parameters.max_dist,                                       // Distance to absorbing boundary
+      parameters.rate_decay_h, parameters.rate_decay_b },           // Reaction parameters
+    parameters.max_dist,                                            // Distance to absorbing boundary
     ecoli::TransitionHelper_EColi_PiecewiseAdvection{
       parameters.time_h_diff,
       time_watercolumn, time_hyporheic_adv,
@@ -89,14 +116,14 @@ int main(int argc, const char * argv[])
   };
   
   auto get_measure_zones =
-  [&parameters]()
+  [&zones_name]()
   {
     std::vector<std::pair<double, double>> zones;
-    if (parameters.zones_name.empty())
+    if (zones_name.empty())
       return zones;
     
     auto file = useful::open_read("../data/zones_"
-      + parameters.zones_name + ".dat");
+      + zones_name + ".dat");
     double left, right;
     while (file >> left >> right)
       zones.push_back({ left, right });
@@ -104,12 +131,19 @@ int main(int argc, const char * argv[])
   };
   
   // Prepare output
-  std::string filename_output_domain{ output_dir
-    + "/Data_EColi_RegionMass_" + model_name + "_"
-    + parameters.parameter_str() + ".dat" };
-  std::string filename_output_zones{ output_dir
-    + "/Data_EColi_RegionMass_Zones_" + model_name + "_"
-    + parameters.parameter_str() + ".dat" };
+  std::string filename_output_domain{ output_dir + "/"
+    + "Data_EColi_RegionMass_" +
+    + "model_" + model_name + "_"
+    + "parameters_" + parameters_name + "_"
+    + "flow_" + flow_name + "_"
+    + "run_" + std::to_string(run_nr) + ".dat" };
+  std::string filename_output_zones{ output_dir + "/"
+    + "Data_EColi_RegionMass_Zones" +
+    + "model_" + model_name + "_"
+    + "parameters_" + parameters_name + "_"
+    + "flow_" + flow_name + "_"
+    + "zones_" + zones_name + "_"
+    + "run_" + std::to_string(run_nr) + ".dat" };
   
   std::cout << std::setprecision(2)
             << std::scientific;
@@ -117,6 +151,7 @@ int main(int argc, const char * argv[])
   auto measure_times = get_measure_times();
   Measurer_Domain measurer_domain{ measure_times };
   Measurer_Zones measurer_zones{ measure_times, get_measure_zones() };
+  std::cout << measurer_zones.zones.size() << "\n";
   
   // Handle continuous injection by discretizing
   // and simulating separately to conserve memory

@@ -11,7 +11,6 @@
 
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include "DepositionResuspension.h"
 #include "general/useful.h"
@@ -21,7 +20,7 @@ namespace ecoli
 {
   namespace model_1
   {
-    const std::string model_name = { "model_1" };
+    const std::string model_name = { "1" };
     
     struct Parameters
     {
@@ -48,50 +47,40 @@ namespace ecoli
       std::size_t nr_measurements;
       std::string measure_spacing;
       std::size_t nr_particles;
-      std::string flow_name;
-      std::size_t run_nr;
-      std::string zones_name;
       
-      Parameters(int argc, const char * argv[])
+      Parameters(std::string const& filename)
       {
-        if (argc != 26 && argc != 27)
-          throw useful::bad_parameters();
-        
-        std::size_t arg = 1;
-        time_w_diff = atof(argv[arg++]);
-        time_h_diff = atof(argv[arg++]);
-        time_b = atof(argv[arg++]);
-        alpha_b = atof(argv[arg++]);
-        advection_coeff_w = atof(argv[arg++]);
-        advection_coeff_h = atof(argv[arg++]);
-        prob_resusp = atof(argv[arg++]);
-        prob_resusp_adv = atof(argv[arg++]);
-        rate_decay_w = atof(argv[arg++]);
-        rate_decay_h = atof(argv[arg++]);
-        rate_decay_b = atof(argv[arg++]);
-        concentration_inj_w = atof(argv[arg++]);
-        mass_inj_h = atof(argv[arg++]);
-        mass_inj_b = atof(argv[arg++]);
-        time_injection_min = atof(argv[arg++]);
-        time_injection_max = atof(argv[arg++]);
-        time_step_injection = atof(argv[arg++]);
-        max_dist = atof(argv[arg++]);
-        time_min = atof(argv[arg++]);
-        time_max = atof(argv[arg++]);
-        nr_measurements = strtoul(argv[arg++], NULL, 0);
-        measure_spacing = argv[arg++];
-        nr_particles = strtoul(argv[arg++], NULL, 0);
-        flow_name = argv[arg++];
-        run_nr = strtoul(argv[arg++], NULL, 0);
-        zones_name = argc > arg
-        ? argv[arg++]
-        : "";
+        auto input = useful::open_read(filename);
+        useful::read(input, time_w_diff);
+        useful::read(input, time_h_diff);
+        useful::read(input, time_b);
+        useful::read(input, alpha_b);
+        useful::read(input, advection_coeff_w);
+        useful::read(input, advection_coeff_h);
+        useful::read(input, prob_resusp);
+        useful::read(input, prob_resusp_adv);
+        useful::read(input, rate_decay_w);
+        useful::read(input, rate_decay_h);
+        useful::read(input, rate_decay_b);
+        useful::read(input, concentration_inj_w);
+        useful::read(input, mass_inj_h);
+        useful::read(input, mass_inj_b);
+        useful::read(input, time_injection_min);
+        useful::read(input, time_injection_max);
+        useful::read(input, time_step_injection);
+        useful::read(input, max_dist);
+        useful::read(input, time_min);
+        useful::read(input, time_max);
+        useful::read(input, nr_measurements);
+        useful::read(input, measure_spacing);
+        useful::read(input, nr_particles);
+        input.close();
       }
       
       static void parameter_list()
       {
         std::cout << "Model name: " << model_name << "\n"
-                  << "Parameters (default in []):\n"
+                  << "Parameters:\n"
                   << "\ttime_w_diff             : Mean dispersive residence time in water column\n"
                   << "\ttime_h_diff             : Mean dispersive residence time in hyporheic zone\n"
                   << "\ttime_b                  : Characteristic residence time in bed\n"
@@ -115,44 +104,7 @@ namespace ecoli
                   << "\tnr_measurements         : Nr of measurement times\n"
                   << "\tmeasure_spacing         : lin - Linear time spacing\n"
                   << "\t                          log - Logarithmic time spacing\n"
-                  << "\tnr_particles            : Number of particles per injection\n"
-                  << "\tflow_name               : Name of flow data\n"
-                  << "\trun_nr                  : Nonnegative integer index of output data file\n"
-                  << "\tzones_name [\"\"]         : Name of measurement zone specifications\n";
-      }
-      
-      std::string parameter_str()
-      {
-        std::stringstream stream;
-        stream << std::scientific << std::setprecision(2);
-        stream << time_w_diff << "_"
-               << time_h_diff << "_"
-               << time_b << "_"
-               << alpha_b << "_"
-               << advection_coeff_w << "_"
-               << advection_coeff_h << "_"
-               << prob_resusp << "_"
-               << prob_resusp_adv << "_"
-               << rate_decay_w << "_"
-               << rate_decay_h << "_"
-               << rate_decay_b << "_"
-               << concentration_inj_w << "_"
-               << mass_inj_h << "_"
-               << mass_inj_b << "_"
-               << time_injection_min << "_"
-               << time_injection_max << "_"
-               << time_step_injection << "_"
-               << max_dist << "_"
-               << time_min << "_"
-               << time_max << "_"
-               << nr_measurements << "_"
-               << measure_spacing << "_"
-               << nr_particles << "_"
-               << flow_name << "_";
-               if (!zones_name.empty())
-                 stream << zones_name << "_";
-               stream << run_nr;
-        return stream.str();
+                  << "\tnr_particles            : Number of particles per injection\n";
       }
     };
     
@@ -220,7 +172,7 @@ namespace ecoli
   
   namespace model_2
   {
-    const std::string model_name = { "model_2" };
+    const std::string model_name = { "2" };
     
     struct Parameters
     {
@@ -247,44 +199,34 @@ namespace ecoli
       std::size_t nr_measurements;
       std::string measure_spacing;
       std::size_t nr_particles;
-      std::string flow_name;
-      std::size_t run_nr;
-      std::string zones_name;
       
-      Parameters(int argc, const char * argv[])
+      Parameters(std::string const& filename)
       {
-        if (argc != 26 && argc != 27)
-          throw useful::bad_parameters();
-        
-        std::size_t arg = 1;
-        time_w_diff = atof(argv[arg++]);
-        time_h_diff = atof(argv[arg++]);
-        time_b = atof(argv[arg++]);
-        alpha_b = atof(argv[arg++]);
-        advection_coeff_w = atof(argv[arg++]);
-        advection_coeff_h = atof(argv[arg++]);
-        prob_resusp = atof(argv[arg++]);
-        prob_resusp_adv = atof(argv[arg++]);
-        rate_decay_w = atof(argv[arg++]);
-        rate_decay_h = atof(argv[arg++]);
-        rate_decay_b = atof(argv[arg++]);
-        concentration_inj_w = atof(argv[arg++]);
-        mass_inj_h = atof(argv[arg++]);
-        mass_inj_b = atof(argv[arg++]);
-        time_injection_min = atof(argv[arg++]);
-        time_injection_max = atof(argv[arg++]);
-        time_step_injection = atof(argv[arg++]);
-        max_dist = atof(argv[arg++]);
-        time_min = atof(argv[arg++]);
-        time_max = atof(argv[arg++]);
-        nr_measurements = strtoul(argv[arg++], NULL, 0);
-        measure_spacing = argv[arg++];
-        nr_particles = strtoul(argv[arg++], NULL, 0);
-        flow_name = argv[arg++];
-        run_nr = strtoul(argv[arg++], NULL, 0);
-        zones_name = argc > arg
-        ? argv[arg++]
-        : "";
+        auto input = useful::open_read(filename);
+        useful::read(input, time_w_diff);
+        useful::read(input, time_h_diff);
+        useful::read(input, time_b);
+        useful::read(input, alpha_b);
+        useful::read(input, advection_coeff_w);
+        useful::read(input, advection_coeff_h);
+        useful::read(input, prob_resusp);
+        useful::read(input, prob_resusp_adv);
+        useful::read(input, rate_decay_w);
+        useful::read(input, rate_decay_h);
+        useful::read(input, rate_decay_b);
+        useful::read(input, concentration_inj_w);
+        useful::read(input, mass_inj_h);
+        useful::read(input, mass_inj_b);
+        useful::read(input, time_injection_min);
+        useful::read(input, time_injection_max);
+        useful::read(input, time_step_injection);
+        useful::read(input, max_dist);
+        useful::read(input, time_min);
+        useful::read(input, time_max);
+        useful::read(input, nr_measurements);
+        useful::read(input, measure_spacing);
+        useful::read(input, nr_particles);
+        input.close();
       }
       
       static void parameter_list()
@@ -314,44 +256,7 @@ namespace ecoli
                   << "\tnr_measurements         : Nr of measurement times\n"
                   << "\tmeasure_spacing         : lin - Linear time spacing\n"
                   << "\t                          log - Logarithmic time spacing\n"
-                  << "\tnr_particles            : Number of particles per injection\n"
-                  << "\tflow_name               : Name of flow data\n"
-                  << "\trun_nr                  : Nonnegative integer index of output data file\n"
-                  << "\tzones_name [\"\"]         : Name of measurement zone specifications\n";
-      }
-      
-      std::string parameter_str()
-      {
-        std::stringstream stream;
-        stream << std::scientific << std::setprecision(2);
-        stream << time_w_diff << "_"
-               << time_h_diff << "_"
-               << time_b << "_"
-               << alpha_b << "_"
-               << advection_coeff_w << "_"
-               << advection_coeff_h << "_"
-               << prob_resusp << "_"
-               << prob_resusp_adv << "_"
-               << rate_decay_w << "_"
-               << rate_decay_h << "_"
-               << rate_decay_b << "_"
-               << concentration_inj_w << "_"
-               << mass_inj_h << "_"
-               << mass_inj_b << "_"
-               << time_injection_min << "_"
-               << time_injection_max << "_"
-               << time_step_injection << "_"
-               << max_dist << "_"
-               << time_min << "_"
-               << time_max << "_"
-               << nr_measurements << "_"
-               << measure_spacing << "_"
-               << nr_particles << "_"
-               << flow_name << "_";
-               if (!zones_name.empty())
-                 stream << zones_name << "_";
-               stream << run_nr;
-        return stream.str();
+                  << "\tnr_particles            : Number of particles per injection\n";
       }
     };
     
@@ -419,7 +324,7 @@ namespace ecoli
   
   namespace model_3
   {
-    const std::string model_name = { "model_3" };
+    const std::string model_name = { "3" };
     
     struct Parameters
     {
@@ -450,40 +355,33 @@ namespace ecoli
       std::size_t run_nr;
       std::string zones_name;
       
-      Parameters(int argc, const char * argv[])
+      Parameters(std::string const& filename)
       {
-        if (argc != 26 && argc != 27)
-          throw useful::bad_parameters();
-        
-        std::size_t arg = 1;
-        time_w_diff = atof(argv[arg++]);
-        time_h_diff = atof(argv[arg++]);
-        time_b = atof(argv[arg++]);
-        alpha_b = atof(argv[arg++]);
-        advection_coeff_w = atof(argv[arg++]);
-        advection_coeff_h = atof(argv[arg++]);
-        prob_resusp = atof(argv[arg++]);
-        prob_resusp_adv = atof(argv[arg++]);
-        rate_decay_w = atof(argv[arg++]);
-        rate_decay_h = atof(argv[arg++]);
-        rate_decay_b = atof(argv[arg++]);
-        concentration_inj_w = atof(argv[arg++]);
-        mass_inj_h = atof(argv[arg++]);
-        mass_inj_b = atof(argv[arg++]);
-        time_injection_min = atof(argv[arg++]);
-        time_injection_max = atof(argv[arg++]);
-        time_step_injection = atof(argv[arg++]);
-        max_dist = atof(argv[arg++]);
-        time_min = atof(argv[arg++]);
-        time_max = atof(argv[arg++]);
-        nr_measurements = strtoul(argv[arg++], NULL, 0);
-        measure_spacing = argv[arg++];
-        nr_particles = strtoul(argv[arg++], NULL, 0);
-        flow_name = argv[arg++];
-        run_nr = strtoul(argv[arg++], NULL, 0);
-        zones_name = argc > arg
-        ? argv[arg++]
-        : "";
+        auto input = useful::open_read(filename);
+        useful::read(input, time_w_diff);
+        useful::read(input, time_h_diff);
+        useful::read(input, time_b);
+        useful::read(input, alpha_b);
+        useful::read(input, advection_coeff_w);
+        useful::read(input, advection_coeff_h);
+        useful::read(input, prob_resusp);
+        useful::read(input, prob_resusp_adv);
+        useful::read(input, rate_decay_w);
+        useful::read(input, rate_decay_h);
+        useful::read(input, rate_decay_b);
+        useful::read(input, concentration_inj_w);
+        useful::read(input, mass_inj_h);
+        useful::read(input, mass_inj_b);
+        useful::read(input, time_injection_min);
+        useful::read(input, time_injection_max);
+        useful::read(input, time_step_injection);
+        useful::read(input, max_dist);
+        useful::read(input, time_min);
+        useful::read(input, time_max);
+        useful::read(input, nr_measurements);
+        useful::read(input, measure_spacing);
+        useful::read(input, nr_particles);
+        input.close();
       }
       
       static void parameter_list()
@@ -513,44 +411,7 @@ namespace ecoli
                   << "\tnr_measurements         : Nr of measurement times\n"
                   << "\tmeasure_spacing         : lin - Linear time spacing\n"
                   << "\t                          log - Logarithmic time spacing\n"
-                  << "\tnr_particles            : Number of particles per injection\n"
-                  << "\tflow_name               : Name of flow data\n"
-                  << "\trun_nr                  : Nonnegative integer index of output data file\n"
-                  << "\tzones_name [\"\"]         : Name of measurement zone specifications\n";
-      }
-      
-      std::string parameter_str()
-      {
-        std::stringstream stream;
-        stream << std::scientific << std::setprecision(2);
-        stream << time_w_diff << "_"
-               << time_h_diff << "_"
-               << time_b << "_"
-               << alpha_b << "_"
-               << advection_coeff_w << "_"
-               << advection_coeff_h << "_"
-               << prob_resusp << "_"
-               << prob_resusp_adv << "_"
-               << rate_decay_w << "_"
-               << rate_decay_h << "_"
-               << rate_decay_b << "_"
-               << concentration_inj_w << "_"
-               << mass_inj_h << "_"
-               << mass_inj_b << "_"
-               << time_injection_min << "_"
-               << time_injection_max << "_"
-               << time_step_injection << "_"
-               << max_dist << "_"
-               << time_min << "_"
-               << time_max << "_"
-               << nr_measurements << "_"
-               << measure_spacing << "_"
-               << nr_particles << "_"
-               << flow_name << "_";
-               if (!zones_name.empty())
-                 stream << zones_name << "_";
-               stream << run_nr;
-        return stream.str();
+                  << "\tnr_particles            : Number of particles per injection\n";
       }
     };
     
@@ -618,7 +479,7 @@ namespace ecoli
   
   namespace model_4
   {
-    const std::string model_name = { "model_4" };
+    const std::string model_name = { "4" };
     
     struct Parameters
     {
@@ -647,46 +508,36 @@ namespace ecoli
       std::size_t nr_measurements;
       std::string measure_spacing;
       std::size_t nr_particles;
-      std::string flow_name;
-      std::size_t run_nr;
-      std::string zones_name;
       
-      Parameters(int argc, const char * argv[])
+      Parameters(std::string const& filename)
       {
-        if (argc != 28 && argc != 29)
-          throw useful::bad_parameters();
-        
-        std::size_t arg = 1;
-        time_w_diff = atof(argv[arg++]);
-        time_h_diff = atof(argv[arg++]);
-        time_b = atof(argv[arg++]);
-        alpha_b = atof(argv[arg++]);
-        advection_coeff_w = atof(argv[arg++]);
-        advection_coeff_h = atof(argv[arg++]);
-        advection_cutoff_h = atof(argv[arg++]);
-        rate_cutoff_h = atof(argv[arg++]);
-        prob_resusp = atof(argv[arg++]);
-        prob_resusp_adv = atof(argv[arg++]);
-        rate_decay_w = atof(argv[arg++]);
-        rate_decay_h = atof(argv[arg++]);
-        rate_decay_b = atof(argv[arg++]);
-        concentration_inj_w = atof(argv[arg++]);
-        mass_inj_h = atof(argv[arg++]);
-        mass_inj_b = atof(argv[arg++]);
-        time_injection_min = atof(argv[arg++]);
-        time_injection_max = atof(argv[arg++]);
-        time_step_injection = atof(argv[arg++]);
-        max_dist = atof(argv[arg++]);
-        time_min = atof(argv[arg++]);
-        time_max = atof(argv[arg++]);
-        nr_measurements = strtoul(argv[arg++], NULL, 0);
-        measure_spacing = argv[arg++];
-        nr_particles = strtoul(argv[arg++], NULL, 0);
-        flow_name = argv[arg++];
-        run_nr = strtoul(argv[arg++], NULL, 0);
-        zones_name = argc > arg
-        ? argv[arg++]
-        : "";
+        auto input = useful::open_read(filename);
+        useful::read(input, time_w_diff);
+        useful::read(input, time_h_diff);
+        useful::read(input, time_b);
+        useful::read(input, alpha_b);
+        useful::read(input, advection_coeff_w);
+        useful::read(input, advection_coeff_h);
+        useful::read(input, advection_cutoff_h);
+        useful::read(input, rate_cutoff_h);
+        useful::read(input, prob_resusp);
+        useful::read(input, prob_resusp_adv);
+        useful::read(input, rate_decay_w);
+        useful::read(input, rate_decay_h);
+        useful::read(input, rate_decay_b);
+        useful::read(input, concentration_inj_w);
+        useful::read(input, mass_inj_h);
+        useful::read(input, mass_inj_b);
+        useful::read(input, time_injection_min);
+        useful::read(input, time_injection_max);
+        useful::read(input, time_step_injection);
+        useful::read(input, max_dist);
+        useful::read(input, time_min);
+        useful::read(input, time_max);
+        useful::read(input, nr_measurements);
+        useful::read(input, measure_spacing);
+        useful::read(input, nr_particles);
+        input.close();
       }
       
       static void parameter_list()
@@ -718,46 +569,7 @@ namespace ecoli
                   << "\tnr_measurements         : Nr of measurement times\n"
                   << "\tmeasure_spacing         : lin - Linear time spacing\n"
                   << "\t                          log - Logarithmic time spacing\n"
-                  << "\tnr_particles            : Number of particles per injection\n"
-                  << "\tflow_name               : Name of flow data\n"
-                  << "\trun_nr                  : Nonnegative integer index of output data file\n"
-                  << "\tzones_name [\"\"]         : Name of measurement zone specifications\n";
-      }
-      
-      std::string parameter_str()
-      {
-        std::stringstream stream;
-        stream << std::scientific << std::setprecision(2);
-        stream << time_w_diff << "_"
-               << time_h_diff << "_"
-               << time_b << "_"
-               << alpha_b << "_"
-               << advection_coeff_w << "_"
-               << advection_coeff_h << "_"
-               << advection_cutoff_h << "_"
-               << rate_cutoff_h << "_"
-               << prob_resusp << "_"
-               << prob_resusp_adv << "_"
-               << rate_decay_w << "_"
-               << rate_decay_h << "_"
-               << rate_decay_b << "_"
-               << concentration_inj_w << "_"
-               << mass_inj_h << "_"
-               << mass_inj_b << "_"
-               << time_injection_min << "_"
-               << time_injection_max << "_"
-               << time_step_injection << "_"
-               << max_dist << "_"
-               << time_min << "_"
-               << time_max << "_"
-               << nr_measurements << "_"
-               << measure_spacing << "_"
-               << nr_particles << "_"
-               << flow_name << "_";
-               if (!zones_name.empty())
-                 stream << zones_name << "_";
-               stream << run_nr;
-        return stream.str();
+                  << "\tnr_particles            : Number of particles per injection\n";
       }
     };
     
@@ -826,7 +638,7 @@ namespace ecoli
   
   namespace model_5
   {
-    const std::string model_name = { "model_5" };
+    const std::string model_name = { "5" };
     
     struct Parameters
     {
@@ -853,44 +665,34 @@ namespace ecoli
       std::size_t nr_measurements;
       std::string measure_spacing;
       std::size_t nr_particles;
-      std::string flow_name;
-      std::size_t run_nr;
-      std::string zones_name;
       
-      Parameters(int argc, const char * argv[])
+      Parameters(std::string const& filename)
       {
-        if (argc != 26 && argc != 27)
-          throw useful::bad_parameters();
-        
-        std::size_t arg = 1;
-        time_w_diff = atof(argv[arg++]);
-        time_h_diff = atof(argv[arg++]);
-        time_b = atof(argv[arg++]);
-        alpha_b = atof(argv[arg++]);
-        advection_coeff_w = atof(argv[arg++]);
-        advection_coeff_h = atof(argv[arg++]);
-        prob_resusp = atof(argv[arg++]);
-        prob_resusp_adv = atof(argv[arg++]);
-        rate_decay_w = atof(argv[arg++]);
-        rate_decay_h = atof(argv[arg++]);
-        rate_decay_b = atof(argv[arg++]);
-        concentration_inj_w = atof(argv[arg++]);
-        mass_inj_h = atof(argv[arg++]);
-        mass_inj_b = atof(argv[arg++]);
-        time_injection_min = atof(argv[arg++]);
-        time_injection_max = atof(argv[arg++]);
-        time_step_injection = atof(argv[arg++]);
-        max_dist = atof(argv[arg++]);
-        time_min = atof(argv[arg++]);
-        time_max = atof(argv[arg++]);
-        nr_measurements = strtoul(argv[arg++], NULL, 0);
-        measure_spacing = argv[arg++];
-        nr_particles = strtoul(argv[arg++], NULL, 0);
-        flow_name = argv[arg++];
-        run_nr = strtoul(argv[arg++], NULL, 0);
-        zones_name = argc > arg
-        ? argv[arg++]
-        : "";
+        auto input = useful::open_read(filename);
+        useful::read(input, time_w_diff);
+        useful::read(input, time_h_diff);
+        useful::read(input, time_b);
+        useful::read(input, alpha_b);
+        useful::read(input, advection_coeff_w);
+        useful::read(input, advection_coeff_h);
+        useful::read(input, prob_resusp);
+        useful::read(input, prob_resusp_adv);
+        useful::read(input, rate_decay_w);
+        useful::read(input, rate_decay_h);
+        useful::read(input, rate_decay_b);
+        useful::read(input, concentration_inj_w);
+        useful::read(input, mass_inj_h);
+        useful::read(input, mass_inj_b);
+        useful::read(input, time_injection_min);
+        useful::read(input, time_injection_max);
+        useful::read(input, time_step_injection);
+        useful::read(input, max_dist);
+        useful::read(input, time_min);
+        useful::read(input, time_max);
+        useful::read(input, nr_measurements);
+        useful::read(input, measure_spacing);
+        useful::read(input, nr_particles);
+        input.close();
       }
       
       static void parameter_list()
@@ -920,44 +722,7 @@ namespace ecoli
                   << "\tnr_measurements         : Nr of measurement times\n"
                   << "\tmeasure_spacing         : lin - Linear time spacing\n"
                   << "\t                          log - Logarithmic time spacing\n"
-                  << "\tnr_particles            : Number of particles per injection\n"
-                  << "\tflow_name               : Name of flow data\n"
-                  << "\trun_nr                  : Nonnegative integer index of output data file\n"
-                  << "\tzones_name [\"\"]         : Name of measurement zone specifications\n";
-      }
-      
-      std::string parameter_str()
-      {
-        std::stringstream stream;
-        stream << std::scientific << std::setprecision(2);
-        stream << time_w_diff << "_"
-               << time_h_diff << "_"
-               << time_b << "_"
-               << alpha_b << "_"
-               << advection_coeff_w << "_"
-               << advection_coeff_h << "_"
-               << prob_resusp << "_"
-               << prob_resusp_adv << "_"
-               << rate_decay_w << "_"
-               << rate_decay_h << "_"
-               << rate_decay_b << "_"
-               << concentration_inj_w << "_"
-               << mass_inj_h << "_"
-               << mass_inj_b << "_"
-               << time_injection_min << "_"
-               << time_injection_max << "_"
-               << time_step_injection << "_"
-               << max_dist << "_"
-               << time_min << "_"
-               << time_max << "_"
-               << nr_measurements << "_"
-               << measure_spacing << "_"
-               << nr_particles << "_"
-               << flow_name << "_";
-               if (!zones_name.empty())
-                 stream << zones_name << "_";
-               stream << run_nr;
-        return stream.str();
+                  << "\tnr_particles            : Number of particles per injection\n";
       }
     };
     
