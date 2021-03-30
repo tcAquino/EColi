@@ -45,7 +45,7 @@ int main(int argc, const char * argv[])
               << "\t                    and surge data (if applicable)\n"
               << "\t                    from ../flow/surge_flow_name.dat\n"
               << "\trun_nr            : Nonnegative integer index of output data file\n"
-              << "\tzones_name [\"\"] : Name of measurement zone specifications. Read zone\n"
+              << "\tzones_name [\"\"]   : Name of measurement zone specifications. Read zone\n"
               << "\t                    specifications from ../data/zones_zones_name.dat\n"
               << "--------------------------------------------------\n"
               << "Remaining parameters, see below,\n"
@@ -67,7 +67,8 @@ int main(int argc, const char * argv[])
   : "";
   
   std::string parameters_dir = "../parameters";
-  Parameters parameters(parameters_dir + "/parameters_" + parameters_name);
+  Parameters parameters(parameters_dir +
+    "/parameters_" + parameters_name + ".dat");
   
   std::string flow_dir = "../flow";
   std::string output_dir = "../data";
@@ -138,7 +139,7 @@ int main(int argc, const char * argv[])
     + "flow_" + flow_name + "_"
     + "run_" + std::to_string(run_nr) + ".dat" };
   std::string filename_output_zones{ output_dir + "/"
-    + "Data_EColi_RegionMass_Zones" +
+    + "Data_EColi_RegionMass_Zones_" +
     + "model_" + model_name + "_"
     + "parameters_" + parameters_name + "_"
     + "flow_" + flow_name + "_"
@@ -151,7 +152,6 @@ int main(int argc, const char * argv[])
   auto measure_times = get_measure_times();
   Measurer_Domain measurer_domain{ measure_times };
   Measurer_Zones measurer_zones{ measure_times, get_measure_zones() };
-  std::cout << measurer_zones.zones.size() << "\n";
   
   // Handle continuous injection by discretizing
   // and simulating separately to conserve memory

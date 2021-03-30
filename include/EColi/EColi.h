@@ -502,11 +502,14 @@ namespace ecoli
     , max_distance{ max_distance }
     {}
 
+    // Enforce boundary condition if necessary
+    // If enforced, return true, otherwise false
     template <typename State>
-    void operator() (State& state)
+    bool operator() (State& state)
     {
       // Ignore absorbed particles
-      if (state.region == 3) return;
+      if (state.region == 3)
+        return 0;
 
       // Compute new state properties
       auto region_time = transition_helper(state, adv);
@@ -516,38 +519,7 @@ namespace ecoli
 
       // Deal with jump going out of bounds
       // or set the new state as computed
-      if (!OutOfBounds(state, jump))
-      {
-        react(state, exposure_time);
-        state.region = new_region;
-        state.position += jump;
-        state.time += exposure_time;
-      }
-    }
-
-    Advection const& advection() const
-    { return adv; }
-
-    Reaction const& reaction() const
-    { return react; }
-
-  private:
-    Advection adv;
-    TransitionHelper transition_helper;
-    Reaction react;
-    const double max_distance;
-
-    // Check if jump takes the current position beyond the maximum distance
-    // If out of bounds, set the region to 3,
-    // set the time to the time of reaching max_distance,
-    // and return true.
-    // Otherwise, return false
-    template <typename State>
-    bool OutOfBounds(State& state, double jump)
-    {
-      // If out of bounds,
-      // find out how long until max_distance was reached, update state, and return true
-      if (state.position + jump > max_distance)
+      if (OutOfBounds(state, jump))
       {
         double exposure_time = 0.;
         double pos = state.position;
@@ -565,7 +537,7 @@ namespace ecoli
           // decrease the exposure time,
           // taking into account the non-traversed portion at the current velocity,
           // set the new state, and return true
-          if (pos > max_distance)
+          if (pos >= max_distance)
           {
             exposure_time -= (pos-max_distance)/adv.velocity(adv_it);
             react(state, exposure_time);
@@ -585,9 +557,33 @@ namespace ecoli
         state.time += exposure_time;
         return 1;
       }
-      
-      // Otherwise, return false
-      return 0;
+      else
+      {
+        react(state, exposure_time);
+        state.region = new_region;
+        state.position += jump;
+        state.time += exposure_time;
+        return 0;
+      }
+    }
+
+    Advection const& advection() const
+    { return adv; }
+
+    Reaction const& reaction() const
+    { return react; }
+
+  private:
+    Advection adv;
+    TransitionHelper transition_helper;
+    Reaction react;
+    const double max_distance;
+
+    // Check if jump takes the current position to or beyond the maximum distance
+    template <typename State>
+    bool OutOfBounds(State& state, double jump)
+    {
+      return state.position + jump >= max_distance;
     }
   };
 }

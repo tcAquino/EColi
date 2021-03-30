@@ -52,7 +52,7 @@ namespace ecoli
         
         // If particle has been absorbed in the new state
         // If the new state is in the past
-        if (state_new.time < measure_times[measure])
+        if (state_new.time <= measure_times[measure])
           masses[measure][3] += part.state_new().mass;
         // If it is in the future
         else
@@ -143,10 +143,7 @@ namespace ecoli
         // If particle has been absorbed in the new state
         // If the new state is in the future
         if (state_new.time > measure_times[measure])
-          for (std::size_t zz = 0; zz < zones.size(); ++zz)
-            if (state_new.position > zones[zz].first
-                && state_new.position < zones[zz].second)
-              interpolate(state_old, reaction, advection);
+          interpolate(state_old, reaction, advection);
       }
       ++measure;
     }
