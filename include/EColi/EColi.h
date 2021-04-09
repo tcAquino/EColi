@@ -204,7 +204,7 @@ namespace ecoli
     (std::string const& filename, std::string const& filename_surge)
     {
       auto file = useful::open_read(filename);
-      auto file_surge = useful::open_read(filename);
+      auto file_surge = useful::open_read(filename_surge);
       Container advection;
       double time, val;
       bool surge;
